@@ -2,11 +2,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import '../../providers/user_provider.dart';
 import '../../services/db_service.dart';
 import '../../utils/utils.dart';
-import 'package:path_provider/path_provider.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({Key? key}) : super(key: key);
@@ -61,21 +59,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   void postImage(String uid, String username, String profImage) async {
+    if (_file == null) {
+      showSnackBar(context, 'Please select an image first.');
+      return;
+    }
+    
     setState(() {
       isLoading = true;
     });
 
     try {
-      File? imageFile;
-      if (_file != null) {
-        final tempDir = await getTemporaryDirectory();
-        imageFile = await File('${tempDir.path}/image.png').create();
-        imageFile.writeAsBytesSync(_file!);
-      }
-
       String res = await DBService().uploadPost(
         _descriptionController.text,
-        imageFile ?? File(''), 
+        _file!, 
         uid,
         username,
         profImage,
@@ -86,7 +82,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           isLoading = false;
         });
         if (context.mounted) {
-          showSnackBar(context, 'Posted!');
+          showSnackBar(context, 'Meow! 🐾 Posted successfully! 🎉');
         }
         clearImage();
       } else {

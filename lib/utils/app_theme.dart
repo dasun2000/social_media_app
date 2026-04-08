@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static ThemeData get lightTheme {
+  static ThemeData getLightTheme(Color seedColor) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6C63FF),
+        seedColor: seedColor,
         brightness: Brightness.light,
         surface: const Color(0xFFF7F7F9),
       ),
@@ -39,18 +39,18 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 1.5),
+          borderSide: BorderSide(color: seedColor, width: 1.5),
         ),
         contentPadding: const EdgeInsets.all(16),
       ),
     );
   }
 
-  static ThemeData get darkTheme {
+  static ThemeData getDarkTheme(Color seedColor) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6C63FF),
+        seedColor: seedColor,
         brightness: Brightness.dark,
         surface: const Color(0xFF1E1E1E),
       ),
@@ -82,7 +82,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6C63FF), width: 1.5),
+          borderSide: BorderSide(color: seedColor, width: 1.5),
         ),
         contentPadding: const EdgeInsets.all(16),
       ),

@@ -5,6 +5,9 @@ import '../../providers/user_provider.dart';
 import 'feed_screen.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
+import 'inbox_screen.dart';
+import 'search_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -54,6 +57,8 @@ class _MainScreenState extends State<MainScreen> {
         onPageChanged: onPageChanged,
         children: [
           const FeedScreen(),
+          const SearchScreen(),
+          const InboxScreen(),
           const CreatePostScreen(),
           ProfileScreen(), 
         ],
@@ -65,6 +70,45 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            activeIcon: Icon(Icons.search_rounded),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Builder( // Using Builder to get a clean context
+              builder: (context) {
+                var userProvider = Provider.of<UserProvider>(context);
+                String? myId = userProvider.getUser?.id;
+                
+                if (myId == null) {
+                  return const Icon(Icons.chat_bubble_outline);
+                }
+
+                return StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('chats').where('users', arrayContains: myId).snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    bool hasUnread = false;
+                    if (snapshot.hasData) {
+                      for (var doc in snapshot.data!.docs) {
+                        var data = doc.data() as Map<String, dynamic>;
+                        if (data['unreadBy_$myId'] == true) {
+                          hasUnread = true;
+                          break;
+                        }
+                      }
+                    }
+                    return Badge(
+                      isLabelVisible: hasUnread,
+                      child: const Icon(Icons.chat_bubble_outline),
+                    );
+                  }
+                );
+              }
+            ),
+            activeIcon: const Icon(Icons.chat_bubble),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle_outline),
@@ -79,8 +123,9 @@ class _MainScreenState extends State<MainScreen> {
         ],
         onTap: navigationTapped,
         currentIndex: _page,
-        selectedItemColor: const Color(0xFF6C63FF),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
         showUnselectedLabels: false,
       ),
