@@ -144,14 +144,36 @@ class _CutePostItemState extends State<CutePostItem> with SingleTickerProviderSt
                       style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                    if (userProvider.getUser?.id == widget.post.uid)
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (value) async {
+                          if (value == 'edit') {
+                            _showEditDialog();
+                          } else if (value == 'delete') {
+                            await DBService().deletePost(widget.post.id);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Edit Post'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete Post', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      )
+                    else 
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text('✨', style: TextStyle(fontSize: 16)),
                       ),
-                      child: const Text('✨', style: TextStyle(fontSize: 16)),
-                    ),
                   ],
                 ),
               ),
@@ -253,6 +275,35 @@ class _CutePostItemState extends State<CutePostItem> with SingleTickerProviderSt
           ),
         ),
       ),
+    );
+  }
+  void _showEditDialog() {
+    TextEditingController descController = TextEditingController(text: widget.post.description);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Post"),
+          content: TextField(
+            controller: descController,
+            decoration: const InputDecoration(hintText: "Enter new description"),
+            maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await DBService().updatePost(widget.post.id, descController.text);
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

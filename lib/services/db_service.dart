@@ -129,4 +129,22 @@ class DBService {
       debugPrint(e.toString());
     }
   }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).delete();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  Future<void> updatePost(String postId, String newDescription) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'description': newDescription,
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
 }

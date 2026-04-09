@@ -222,11 +222,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     }
                   }
 
-                  return Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
+                  return GestureDetector(
+                    onTap: () {
+                      if (widget.uid == null || widget.uid == Provider.of<UserProvider>(context, listen: false).getUser!.id) {
+                        _showPostOptionsDialog(snap);
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   );
@@ -331,6 +338,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
       ),
+    );
+  }
+
+  void _showPostOptionsDialog(DocumentSnapshot snap) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Post'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditDialog(snap);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete Post', style: TextStyle(color: Colors.red)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await DBService().deletePost(snap.id);
+                  getData(); 
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  void _showEditDialog(DocumentSnapshot snap) {
+    TextEditingController descController = TextEditingController(text: snap['description'] ?? '');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Post"),
+          content: TextField(
+            controller: descController,
+            decoration: const InputDecoration(hintText: "Enter new description"),
+            maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await DBService().updatePost(snap.id, descController.text);
+                if (context.mounted) Navigator.pop(context);
+                getData();
+                setState(() {});
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
